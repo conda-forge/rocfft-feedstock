@@ -1,50 +1,45 @@
 {% set name = "rocfft" %}
-{% set version = "1.0.25" %}
-{% set rocm_version = "6.0.2" %}
+{% set version = "7.2.4" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://github.com/ROCm/rocFFT/archive/refs/tags/rocm-{{ rocm_version }}.tar.gz
-  sha256: d3e1f7a4dc661f1e5ffce02e2e01ae6c3c339bac8e93deaf175e4c03ddfea459
+  url: https://github.com/ROCm/rocm-libraries/releases/download/rocm-{{ version }}/rocfft.tar.gz
+  sha256: c37e25e7a4f09a1064c53b93b14c14cb7400f046405ea0ef3ea1f4b4a80d7528
   patches:
-    - 0001-Make-rocm-cmake-mandatory.patch
-    - 0001-Add-find_package-hip.patch
     - 0001-Fix-mman-include-for-MADV_HUGEPAGE.patch
-    - 0001-Disable-ahead-of-time-kernel-compilation.patch
 
 build:
   number: 0
   skip: True  # [not linux]
+  run_exports:
+    - {{ pin_subpackage(name, max_pin='x.x') }}
 
 requirements:
   build:
     - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
     - {{ stdlib('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('hip') }}
     - cmake
-    - make
+    - pkg-config
+    - ninja
   host:
-    - compiler-rt
-    - clangdev
-    - hip-devel
-    - hipcc
-    - lld
+    - rocm-core {{ version }}.*
     - rocm-cmake
-    - rocm-device-libs
     - sqlite
 
 test:
-  requires:
-    - pip
   commands:
-    - pip check
+    - test -f $PREFIX/include/rocfft/rocfft.h
+    - test -f $PREFIX/lib/librocfft.so
+    - test -f $PREFIX/lib/cmake/rocfft/rocfft-config.cmake
 
 about:
   home: https://rocm.docs.amd.com/projects/rocFFT
-  summary: rocFFT library
+  summary: ROCm Fast Fourier Transform (FFT) library
   description: |
     rocFFT is a software library for computing fast Fourier transforms (FFTs)
     written in the HIP programming language. It's part of AMD's software ecosystem
@@ -52,8 +47,8 @@ about:
   license: MIT
   license_family: MIT
   license_file: LICENSE.md
-  doc_url: https://rocm.docs.amd.com/projects/rocFFT
-  dev_url: https://github.com/ROCm/rocFFT
+  doc_url: https://rocm.docs.amd.com/projects/rocFFT/en/latest/
+  dev_url: https://github.com/ROCm/rocm-libraries/tree/develop/projects/rocfft
 
 extra:
   recipe-maintainers:
