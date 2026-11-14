@@ -2,7 +2,3 @@ clang_compiler_version:
   - "22"
 clangxx_compiler_version:
   - "22"
-hip_compiler:
-  - hip-rocm-clang
-hip_compiler_version:
-  - '7.2'
