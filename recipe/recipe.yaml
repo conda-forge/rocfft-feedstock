@@ -30,7 +30,7 @@ outputs:
         - ${{ compiler('clangxx') }}
         - ${{ compiler('hip') }}
         - cmake
-        - pkg-config
+        - pkgconf
         - ninja
       host:
         - rocm-cmake
