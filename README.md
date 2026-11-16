@@ -16,6 +16,8 @@ Documentation: https://rocm.docs.amd.com/projects/rocFFT/en/latest/
 rocFFT is a software library for computing fast Fourier transforms (FFTs)
 written in the HIP programming language. It's part of AMD's software ecosystem
 based on ROCm. The rocFFT library can be used with AMD GPUs.
+Kernels are compiled at runtime on first use; set ROCFFT_RTC_CACHE_PATH to
+keep a persistent cache and avoid recompiling them.
 
 Current build status
 ====================
