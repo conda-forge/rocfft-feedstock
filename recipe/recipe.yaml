@@ -1,0 +1,117 @@
+schema_version: 1
+
+context:
+  name: rocfft
+  version: "7.2.4"
+
+recipe:
+  name: rocfft-split
+  version: ${{ version }}
+
+source:
+  url: https://github.com/ROCm/rocm-libraries/releases/download/rocm-${{ version }}/rocfft.tar.gz
+  sha256: c37e25e7a4f09a1064c53b93b14c14cb7400f046405ea0ef3ea1f4b4a80d7528
+  patches:
+    - 0001-Fix-mman-include-for-MADV_HUGEPAGE.patch
+
+build:
+  number: 0
+  skip:
+    - not linux
+    - hip_compiler_version in (None, "None")
+
+outputs:
+  - staging:
+      name: rocfft-build
+    requirements:
+      build:
+        - ${{ compiler('clang') }}
+        - ${{ stdlib('c') }}
+        - ${{ compiler('clangxx') }}
+        - ${{ compiler('hip') }}
+        - cmake
+        - pkgconf
+        - ninja
+      host:
+        - rocm-cmake
+        - sqlite
+    build:
+      script: build.sh
+
+  - package:
+      name: librocfft
+    inherit: rocfft-build
+    build:
+      files:
+        include:
+          - "**/*"
+        exclude:
+          - include/**
+          - lib/*.a
+          - lib/cmake/**
+          - lib/pkgconfig/**
+          - share/pkgconfig/**
+          - share/doc/**
+    tests:
+      - package_contents:
+          lib:
+            - rocfft
+
+  - package:
+      name: librocfft-devel
+    inherit: rocfft-build
+    build:
+      files:
+        - include/**
+        - lib/*.a
+        - lib/cmake/**
+        - lib/pkgconfig/**
+        - share/pkgconfig/**
+        - share/doc/**
+    requirements:
+      run:
+        - hip-devel
+        - ${{ pin_subpackage('librocfft', exact=True) }}
+
+      run_exports:
+        - ${{ pin_subpackage('librocfft', upper_bound='x.x') }}
+
+    tests:
+      - requirements:
+          run:
+            - cmake-package-check
+            - ${{ compiler('clang') }}
+            - ${{ compiler('clangxx') }}
+        script:
+          - cmake-package-check rocfft
+      - package_contents:
+          include:
+            - rocfft/rocfft.h
+
+  - package:
+      name: rocfft
+    requirements:
+      run:
+        - ${{ pin_subpackage('librocfft-devel', exact=True) }}
+    tests:
+      - script:
+          - test -f $PREFIX/include/rocfft/rocfft.h
+
+about:
+  homepage: https://rocm.docs.amd.com/projects/rocFFT
+  summary: ROCm Fast Fourier Transform (FFT) library
+  description: |
+    rocFFT is a software library for computing fast Fourier transforms (FFTs)
+    written in the HIP programming language. It's part of AMD's software ecosystem
+    based on ROCm. The rocFFT library can be used with AMD GPUs.
+    Kernels are compiled at runtime on first use; set ROCFFT_RTC_CACHE_PATH to
+    keep a persistent cache and avoid recompiling them.
+  license: MIT
+  license_file: LICENSE.md
+  documentation: https://rocm.docs.amd.com/projects/rocFFT/en/latest/
+  repository: https://github.com/ROCm/rocm-libraries/tree/develop/projects/rocfft
+
+extra:
+  recipe-maintainers:
+    - zklaus
+    - conda-forge/rocm-core
