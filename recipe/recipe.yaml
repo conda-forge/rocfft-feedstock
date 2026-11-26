@@ -15,7 +15,7 @@ source:
     - 0001-Fix-mman-include-for-MADV_HUGEPAGE.patch
 
 build:
-  number: 0
+  number: 1
   skip:
     - not linux
     - hip_compiler_version in (None, "None")
@@ -33,6 +33,9 @@ outputs:
         - pkgconf
         - ninja
       host:
+        # rocm-core is a host dependency by convention, see
+        # https://github.com/conda-forge/rocm-core-feedstock/issues/21
+        - rocm-core ${{ version }}.*
         - rocm-cmake
         - sqlite
     build:
